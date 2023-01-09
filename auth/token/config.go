@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type TokenConfig interface {
+type Config interface {
 	GetDuration() (time.Duration, error)
 	GetAttempts() (int, error)
 }

@@ -23,10 +23,10 @@ type Service interface {
 
 type TokenService struct {
 	Logger         logr.Logger
-	Store          TokenStore
-	Conf           TokenConfig
-	Transport      TokenTransport
-	MessageBuilder TokenMessageBuilder
+	Store          Store
+	Conf           Config
+	Transport      Transport
+	MessageBuilder MessageBuilder
 	CtxReqIDKey    interface{}
 }
 
@@ -41,7 +41,7 @@ func Validate(code string) error {
 	return nil
 }
 
-func (ts *TokenService) Verify(ctx context.Context, ownerID string, code string) error {
+func (ts *TokenService) Verify(ctx context.Context, ownerID, code string) error {
 	ts.Logger.V(10).Info("auth.token.Verify() started", "rquid", ctx.Value(ts.CtxReqIDKey))
 	defer ts.Logger.V(10).Info("auth.token.Verify() finished", "rquid", ctx.Value(ts.CtxReqIDKey))
 
@@ -65,7 +65,7 @@ func (ts *TokenService) Verify(ctx context.Context, ownerID string, code string)
 
 	if tkn.Attempts < 0 {
 		ts.Logger.V(0).Info(
-			"auth.token.Verify() no attemtps left",
+			"auth.token.Verify() no attempts left",
 			"rquid", ctx.Value(ts.CtxReqIDKey),
 		)
 		return ErrTokenInactive
@@ -84,7 +84,7 @@ func (ts *TokenService) Verify(ctx context.Context, ownerID string, code string)
 	return nil
 }
 
-func (ts *TokenService) CreateAndDeliver(ctx context.Context, ownerID string, destination string) error {
+func (ts *TokenService) CreateAndDeliver(ctx context.Context, ownerID, destination string) error {
 	ts.Logger.V(10).Info("auth.token.CreateAndDeliver() started", "rquid", ctx.Value(ts.CtxReqIDKey))
 	defer ts.Logger.V(10).Info("auth.token.CreateAndDeliver() finished", "rquid", ctx.Value(ts.CtxReqIDKey))
 

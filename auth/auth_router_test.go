@@ -44,10 +44,7 @@ func (pldm ProcessLoginDataMatcher) Matches(x interface{}) bool {
 
 	ok = pldm.canResendAtMatcher.Matches(v.CanResendAt)
 
-	if !ok {
-		return false
-	}
-	return true
+	return ok
 }
 
 func (pldm ProcessLoginDataMatcher) String() string {
@@ -947,7 +944,7 @@ func TestLoginNotAnonymSessionFound(t *testing.T) {
 	login := "123@test.mail"
 	rbody := fmt.Sprintf(`{"login":"%v"}`, login)
 
-	session := session.Session{
+	ses := session.Session{
 		ID:             cvalue,
 		Data:           make(map[string]interface{}),
 		Opts:           cconf,
@@ -963,7 +960,7 @@ func TestLoginNotAnonymSessionFound(t *testing.T) {
 		EXPECT().
 		LoadSession(gomock.Any(), cvalue).
 		Return(
-			&session,
+			&ses,
 			nil,
 		).
 		Times(1)
@@ -1308,8 +1305,8 @@ func TestVerifyNoCookie(t *testing.T) {
 	router, err := auth.NewAuthRouter(cname, "/login", "/logout", "/verify", "/send", ssmock, tsmock, umock, cconf, sconf, logr.Discard(), 3, 1*time.Minute)
 	assert.Nil(t, err)
 
-	token := "123456"
-	rbody := fmt.Sprintf(`{"token":"%v"}`, token)
+	tkn := "123456"
+	rbody := fmt.Sprintf(`{"token":"%v"}`, tkn)
 
 	notAvailableToVerify := auth.ErrorResponse{
 		Code:    21,
@@ -1343,8 +1340,8 @@ func TestVerifySessionLoadFailed(t *testing.T) {
 	router, err := auth.NewAuthRouter(cname, "/login", "/logout", "/verify", "/send", ssmock, tsmock, umock, cconf, sconf, logr.Discard(), 3, 1*time.Minute)
 	assert.Nil(t, err)
 
-	token := "123456"
-	rbody := fmt.Sprintf(`{"token":"%v"}`, token)
+	tkn := "123456"
+	rbody := fmt.Sprintf(`{"token":"%v"}`, tkn)
 
 	ssmock.
 		EXPECT().
@@ -1377,8 +1374,8 @@ func TestVerifySeesionNotFound(t *testing.T) {
 	router, err := auth.NewAuthRouter(cname, "/login", "/logout", "/verify", "/send", ssmock, tsmock, umock, cconf, sconf, logr.Discard(), 3, 1*time.Minute)
 	assert.Nil(t, err)
 
-	token := "123456"
-	rbody := fmt.Sprintf(`{"token":"%v"}`, token)
+	tkn := "123456"
+	rbody := fmt.Sprintf(`{"token":"%v"}`, tkn)
 
 	ssmock.
 		EXPECT().

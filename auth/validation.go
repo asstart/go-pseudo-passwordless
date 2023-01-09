@@ -75,7 +75,7 @@ func registrateValidators(validatorsList map[string]validatorCfg) (*validator.Va
 	return vld, tr, nil
 }
 
-func registrateCustromTrnsltrs(vld *validator.Validate, tr ut.Translator, key string, msg string) error {
+func registrateCustromTrnsltrs(vld *validator.Validate, tr ut.Translator, key, msg string) error {
 	err := vld.RegisterTranslation(key, tr,
 		func(tr ut.Translator) error {
 			return tr.Add(key, msg, true)

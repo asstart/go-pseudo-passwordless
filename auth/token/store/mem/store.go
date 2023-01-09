@@ -37,20 +37,20 @@ func NewMemStore() *MemStore {
 	return &s
 }
 
-func (s *InMemTokenStore) Save(ctx context.Context, token *token.CodeToken) error {
+func (s *InMemTokenStore) Save(ctx context.Context, tkn *token.CodeToken) error {
 
-	hashed := sha256.Sum256([]byte(token.Value))
+	hashed := sha256.Sum256([]byte(tkn.Value))
 
 	mt := memToken{
 		HashedToken: hashed,
-		ExpireAt:    token.ExpireAt,
-		Attempts:    token.Attempts,
+		ExpireAt:    tkn.ExpireAt,
+		Attempts:    tkn.Attempts,
 	}
 
 	s.Store.mutex.Lock()
 	defer s.Store.mutex.Unlock()
 
-	s.Store.Storage[token.OwnerID] = mt
+	s.Store.Storage[tkn.OwnerID] = mt
 
 	return nil
 }
@@ -66,7 +66,7 @@ func (s *InMemTokenStore) DecreaseAttemptAndLoadLatest(ctx context.Context, owne
 		return nil, token.ErrNoTokenFound
 	}
 
-	mt.Attempts -= 1
+	mt.Attempts--
 	s.Store.Storage[ownerID] = *mt
 
 	return &token.CodeToken{

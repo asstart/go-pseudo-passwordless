@@ -6,7 +6,7 @@ import (
 	"html/template"
 )
 
-type TokenMessageBuilder interface {
+type MessageBuilder interface {
 	GetMessage(token *CodeToken) (string, error)
 }
 

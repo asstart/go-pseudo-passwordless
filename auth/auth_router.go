@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/asstart/go-session"
 	"github.com/asstart/go-pseudo-passwordless/auth/token"
+	"github.com/asstart/go-session"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-logr/logr"
@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	sessionLoginKey string = "login"
+	sessionLoginKey = "login"
 )
 
 type ErrorResponse struct {
@@ -99,7 +99,7 @@ type VerifyResponse struct {
 type authRouter struct {
 	SessionCookieName string
 	SessionContextKey string
-	RedirectUrl       string
+	RedirectURL       string
 	SService          session.Service
 	TService          token.Service
 	UService          AuthUserService
@@ -120,7 +120,7 @@ type authRouter struct {
 
 func NewAuthRouter(
 	cookieName string,
-	loginUrl string, logoutUrl, verifyUrl string, resendUrl string,
+	loginURL string, logoutURL, verifyURL string, resendURL string,
 	sservice session.Service,
 	tservice token.Service,
 	aus AuthUserService,
@@ -154,10 +154,10 @@ func NewAuthRouter(
 
 	r.Use(middleware.AllowContentType("application/json"))
 
-	r.Post(loginUrl, ar.login)
-	r.Post(verifyUrl, ar.verify)
-	r.Get(logoutUrl, ar.logout)
-	r.Get(resendUrl, ar.resend)
+	r.Post(loginURL, ar.login)
+	r.Post(verifyURL, ar.verify)
+	r.Get(logoutURL, ar.logout)
+	r.Get(resendURL, ar.resend)
 
 	return r, nil
 }
@@ -290,7 +290,7 @@ func (ar *authRouter) resend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loginProcessData.Attempts -= 1
+	loginProcessData.Attempts--
 	loginProcessData.CanResendAt = time.Now().Add(ar.RetryTimeout)
 
 	updS, err := ar.SService.AddAttributes(
@@ -330,23 +330,23 @@ func (ar *authRouter) login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if s, err := ar.SService.LoadSession(r.Context(), sid); err != session.ErrSessionNotFound && err != nil {
-			//cookie found, but there're some internal error while loading session
+			// cookie found, but there're some internal error while loading session
 			ar.Logger.Error(err, "auth.login LoadSession failed", "rquid", r.Context().Value(ar.CtxRqIDKey))
 			ar.rndr.JSON(w, http.StatusInternalServerError, renderer.M{})
 			return
 		} else if err == nil && !s.IsExpired() && !s.Anonym {
-			//cookie found, not anon session found, user already logged in
+			// cookie found, not anon session found, user already logged in
 			ar.Logger.V(0).Info("auth.login attempt to login from logged user", "rquid", r.Context().Value(ar.CtxRqIDKey), "uid", s.UID, "sid", s.ID)
 			ar.rndr.JSON(w, http.StatusBadRequest, alreadyLoggedIn)
 			return
 		} else if err == nil && !s.IsExpired() && s.Anonym {
-			//cookie found, anon session found, login process already started
-			//to resend code need to use resend()
+			// cookie found, anon session found, login process already started
+			// to resend code need to use resend()
 			//
-			//try to login again
-			//will be unavailable untill no attempts to resend code left or session not expired
-			//need to redesign?
-			ar.Logger.V(0).Info("auth.login attempt to initiate login with in proccess one", "sid", sid, "rquid", r.Context().Value(ar.CtxRqIDKey))
+			// try to login again
+			// will be unavailable until no attempts to resend code left or session not expired
+			// need to redesign?
+			ar.Logger.V(0).Info("auth.login attempt to initiate login with in process one", "sid", sid, "rquid", r.Context().Value(ar.CtxRqIDKey))
 			ar.rndr.JSON(w, http.StatusBadRequest, loginProcessAlreadyStarted)
 			return
 		}
@@ -442,7 +442,7 @@ func (ar *authRouter) verify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//think about this case, should be opportunity to input code again, if smth goes wrong on server side
+	// think about this case, should be opportunity to input code again, if smth goes wrong on server side
 	if err != nil {
 		ar.Logger.Error(err, "auth.verify LoadSession error", "rquid", r.Context().Value(ar.CtxRqIDKey), "sid", sid)
 		ar.rndr.JSON(w, http.StatusInternalServerError, renderer.M{})
@@ -450,13 +450,13 @@ func (ar *authRouter) verify(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !s.Anonym {
-		ar.Logger.V(0).Info("auth.verify attemp to verify by logged in user", "rquid", r.Context().Value(ar.CtxRqIDKey), "sid", sid)
+		ar.Logger.V(0).Info("auth.verify attempt to verify by logged in user", "rquid", r.Context().Value(ar.CtxRqIDKey), "sid", sid)
 		ar.rndr.JSON(w, http.StatusBadRequest, alreadyLoggedIn)
 		return
 	}
 
 	if s.IsExpired() {
-		ar.Logger.V(0).Info("auth.verify attemp to verify on expired session", "rquid", r.Context().Value(ar.CtxRqIDKey), "sid", sid)
+		ar.Logger.V(0).Info("auth.verify attempt to verify on expired session", "rquid", r.Context().Value(ar.CtxRqIDKey), "sid", sid)
 		ar.rndr.JSON(w, http.StatusBadRequest, notAvailableToVerify)
 		return
 	}

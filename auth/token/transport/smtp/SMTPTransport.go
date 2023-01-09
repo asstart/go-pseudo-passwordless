@@ -24,7 +24,7 @@ type SMTPTransport struct {
 // By default only "From" and "To" headers will be added to the email
 // Any other headers including "Subject" should be configured
 // With SMTPTransport.Headers field
-func (t *SMTPTransport) Send(ctx context.Context, msg string, receiver string) error {
+func (t *SMTPTransport) Send(ctx context.Context, msg, receiver string) error {
 	t.Logger.V(10).Info("auth.token.smtp.Send() started", "rquid", ctx.Value(t.CtxRqIDKey))
 	defer t.Logger.V(10).Info("auth.token.smtp.Send() finished", "rquid", ctx.Value(t.CtxRqIDKey))
 
@@ -46,7 +46,7 @@ func (t *SMTPTransport) Send(ctx context.Context, msg string, receiver string) e
 	return err
 }
 
-func (t *SMTPTransport) buildBody(from string, to string, msg string) []byte {
+func (t *SMTPTransport) buildBody(from, to, msg string) []byte {
 	builder := strings.Builder{}
 	builder.WriteString(fmt.Sprintf("From: %v\r\n", from))
 	builder.WriteString(fmt.Sprintf("To: %v\r\n", to))

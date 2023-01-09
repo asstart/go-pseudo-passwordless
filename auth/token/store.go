@@ -7,7 +7,7 @@ import (
 
 var ErrNoTokenFound = errors.New("token_store: token not found")
 
-type TokenStore interface {
+type Store interface {
 	Save(ctx context.Context, token *CodeToken) error
 	DecreaseAttemptAndLoadLatest(ctx context.Context, uid string) (*CodeToken, error)
 }
